@@ -1,0 +1,67 @@
+import pennylane as qml
+import numpy as np
+import matplotlib.pyplot as plt
+
+# PQC Definition
+num_qubits = 2
+dev = qml.device("default.qubit", wires=num_qubits)
+
+@qml.qnode(dev)
+def belief_circuit(angles):
+    for i in range(num_qubits):
+        qml.RX(angles[i], wires=i)
+    for i in range(num_qubits):
+        qml.RY(angles[i+num_qubits], wires=i)
+    return qml.probs(wires=range(num_qubits))
+
+def cost_function(angles, target_probabilities):
+    probabilities = belief_circuit(angles)
+    return np.mean((probabilities - target_probabilities)**2)
+
+class Agent:
+    def __init__(self, initial_angles):
+        self.angles = initial_angles
+        self.optimizer = qml.AdamOptimizer(stepsize=0.1)
+
+    def update_belief(self, target_probabilities, steps=100):
+        for step in range(steps):
+            self.angles = self.optimizer.step(cost_function, self.angles, target_probabilities=target_probabilities)
+
+    def get_belief_probabilities(self):
+        return belief_circuit(self.angles)
+
+    def get_belief_angles(self):
+        return self.angles
+
+# Visualization function
+def visualize_belief_state(probabilities, agent_id, step):
+    labels = [f'|{i:0{num_qubits}b}>' for i in range(len(probabilities))]
+    plt.figure(figsize=(8, 6))
+    plt.bar(labels, probabilities)
+    plt.title(f"Agent {agent_id} Belief State - Step {step}")
+    plt.xlabel("Basis States")
+    plt.ylabel("Probability")
+    plt.ylim(0, 1)
+    plt.show()
+
+# Simulation Setup
+num_agents = 3
+agents = []
+for _ in range(num_agents):
+    initial_angles = np.random.rand(num_qubits * 2)
+    agents.append(Agent(initial_angles))
+
+# Simulation Loop
+for step in range(5):
+    print(f"--- Simulation Step {step + 1} ---")
+    for i, agent in enumerate(agents):
+        # Simulate interaction (generate target probabilities)
+        target_probabilities = np.random.rand(2**num_qubits)
+        target_probabilities /= np.sum(target_probabilities) # Normalize
+
+        print(f"Agent {i} before update: {agent.get_belief_probabilities()}")
+        agent.update_belief(target_probabilities)
+        print(f"Agent {i} after update: {agent.get_belief_probabilities()}")
+
+        # Visualize belief state
+        visualize_belief_state(agent.get_belief_probabilities(), i, step + 1)
