@@ -92,4 +92,7 @@ jobs:
     - name: Auto-categorize issues
       run: |
         python src/auto_categorize_issues.py
+       web: python app.py
+       git push heroku master
+       
         
