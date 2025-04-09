@@ -1,0 +1,12 @@
+symbolic-decoding/
+│
+├── main.py                  # Main entry point for running the code
+├── model/
+│   ├── __init__.py          # Initialize model package
+│   ├── viterbi_lstm.py      # Viterbi-enhanced LSTM model
+│   └── gpt2_finetuning.py   # GPT-2 fine-tuning module
+├── utils/
+│   ├── __init__.py          # Initialize utils package
+│   └── data_preprocessing.py # Code for data preprocessing, encoding, etc.
+├── requirements.txt         # List of dependencies
+└── README.md                # Project documentation
